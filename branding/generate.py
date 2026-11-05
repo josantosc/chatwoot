@@ -4,9 +4,15 @@ Uso: python3 generate.py  ->  arquivos em ./public (copiados para /app/public no
 
 Marca e cores podem ser trocadas por variáveis de ambiente (BRAND_NAME, BRAND_SHORT,
 BRAND_LOGO_TOP, BRAND_LOGO_MAIN, BRAND_COLOR_TOP, BRAND_COLOR_BOTTOM, BRAND_COLOR_BADGE).
+
+Com BRAND_LOGO_FILE (PNG de fundo branco, relativo a esta pasta) os logos e ícones saem
+do logo oficial em vez do desenho: BRAND_LOGO_BOX recorta o logo, BRAND_ICON_BOX o emblema
+dos ícones e BRAND_SMALL_ICON_BOX o dos favicons de 16/32 px (caixas "x1,y1,x2,y2" em pixels).
 """
+import base64
 import json
 import os
+from io import BytesIO
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -114,13 +120,97 @@ def logo_preview(text_color, sub_color, bg):
     return img
 
 
+def box(env):
+    value = os.environ.get(env)
+    return tuple(int(v) for v in value.split(",")) if value else None
+
+
+def transparent(img):
+    """Fundo branco vira transparente, desfazendo a mistura com o branco nas bordas."""
+    img = img.convert("RGBA")
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, _ = px[x, y]
+            a = min(255, (255 - min(r, g, b)) * 4)
+            if a == 0:
+                px[x, y] = (255, 255, 255, 0)
+                continue
+            f = a / 255
+            px[x, y] = tuple(max(0, min(255, round((c - 255 * (1 - f)) / f))) for c in (r, g, b)) + (a,)
+    return img.crop(img.getbbox())
+
+
+def lighten_for_dark(img):
+    """Clareia os tons azulados para o logo aparecer no tema escuro."""
+    img = img.copy()
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = px[x, y]
+            if a and b > r:
+                px[x, y] = tuple(round(c + (255 - c) * 0.45) for c in (r, g, b)) + (a,)
+    return img
+
+
+def raster_icon(emblem, badge=False):
+    s = BASE
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    ImageDraw.Draw(img).rounded_rectangle([0, 0, s - 1, s - 1], radius=int(s * 0.22), fill="white")
+    inner = int(s * 0.80)
+    scale = min(inner / emblem.width, inner / emblem.height)
+    e = emblem.resize((round(emblem.width * scale), round(emblem.height * scale)), Image.LANCZOS)
+    img.alpha_composite(e, ((s - e.width) // 2, (s - e.height) // 2))
+    if badge:
+        u = s / 512
+        cx, cy, br = 410 * u, 102 * u, 96 * u
+        d = ImageDraw.Draw(img)
+        d.ellipse([cx - br - 16 * u, cy - br - 16 * u, cx + br + 16 * u, cy + br + 16 * u], fill="white")
+        d.ellipse([cx - br, cy - br, cx + br, cy + br], fill=BADGE)
+    return img
+
+
+def svg_png(img):
+    buf = BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    data = base64.b64encode(buf.getvalue()).decode()
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+            f'width="{img.width}" height="{img.height}" viewBox="0 0 {img.width} {img.height}">\n'
+            f'  <image width="{img.width}" height="{img.height}" xlink:href="data:image/png;base64,{data}"/>\n'
+            f'</svg>\n')
+
+
+def fit_width(img, width):
+    return img.resize((width, round(img.height * width / img.width)), Image.LANCZOS) if img.width > width else img
+
+
+def on_background(img, bg):
+    canvas = Image.new("RGBA", (img.width + 64, img.height + 64), bg)
+    canvas.alpha_composite(img, (32, 32))
+    return canvas
+
+
 def main():
     ASSETS.mkdir(parents=True, exist_ok=True)
 
-    full = draw_icon(with_text=True)
-    small = draw_icon(with_text=False)
-    badge_small = draw_icon(with_text=False, badge=True)
-    badge_full = draw_icon(with_text=True, badge=True)
+    logo_file = os.environ.get("BRAND_LOGO_FILE")
+    if logo_file:
+        source = Image.open(Path(__file__).parent / logo_file).convert("RGB")
+        logo_box = box("BRAND_LOGO_BOX")
+        logo = fit_width(transparent(source.crop(logo_box) if logo_box else source), 600)
+        logo_dark = lighten_for_dark(logo)
+        emblem = transparent(source.crop(box("BRAND_ICON_BOX")))
+        small_box = box("BRAND_SMALL_ICON_BOX")
+        small_emblem = transparent(source.crop(small_box)) if small_box else emblem
+        full = raster_icon(emblem)
+        small = raster_icon(small_emblem)
+        badge_small = raster_icon(small_emblem, badge=True)
+        badge_full = raster_icon(emblem, badge=True)
+    else:
+        full = draw_icon(with_text=True)
+        small = draw_icon(with_text=False)
+        badge_small = draw_icon(with_text=False, badge=True)
+        badge_full = draw_icon(with_text=True, badge=True)
 
     for size in (16, 32):
         save_png(small, f"favicon-{size}x{size}.png", size)
@@ -139,9 +229,14 @@ def main():
     for size in (70, 144, 150, 310):
         save_png(full, f"ms-icon-{size}x{size}.png", size)
 
-    (ASSETS / "logo_thumbnail.svg").write_text(icon_svg(), encoding="utf-8")
-    (ASSETS / "logo.svg").write_text(logo_svg(hexcolor(BOTTOM), hexcolor(TOP)), encoding="utf-8")
-    (ASSETS / "logo_dark.svg").write_text(logo_svg("#FFFFFF", "#7FD8DB"), encoding="utf-8")
+    if logo_file:
+        (ASSETS / "logo_thumbnail.svg").write_text(svg_png(full.resize((256, 256), Image.LANCZOS)), encoding="utf-8")
+        (ASSETS / "logo.svg").write_text(svg_png(logo), encoding="utf-8")
+        (ASSETS / "logo_dark.svg").write_text(svg_png(logo_dark), encoding="utf-8")
+    else:
+        (ASSETS / "logo_thumbnail.svg").write_text(icon_svg(), encoding="utf-8")
+        (ASSETS / "logo.svg").write_text(logo_svg(hexcolor(BOTTOM), hexcolor(TOP)), encoding="utf-8")
+        (ASSETS / "logo_dark.svg").write_text(logo_svg("#FFFFFF", "#7FD8DB"), encoding="utf-8")
 
     densities = {36: "0.75", 48: "1.0", 72: "1.5", 96: "2.0", 144: "3.0", 192: "4.0"}
     manifest = {
@@ -159,8 +254,12 @@ def main():
     preview = Path(__file__).parent / "preview"
     preview.mkdir(exist_ok=True)
     full.resize((256, 256), Image.LANCZOS).save(preview / "icon.png")
-    logo_preview(BOTTOM, TOP, "white").save(preview / "logo.png")
-    logo_preview("white", (127, 216, 219), (17, 24, 39)).save(preview / "logo_dark.png")
+    if logo_file:
+        on_background(logo, "white").save(preview / "logo.png")
+        on_background(logo_dark, (17, 24, 39)).save(preview / "logo_dark.png")
+    else:
+        logo_preview(BOTTOM, TOP, "white").save(preview / "logo.png")
+        logo_preview("white", (127, 216, 219), (17, 24, 39)).save(preview / "logo_dark.png")
     strip = Image.new("RGBA", (16 + 32 + 96 + 32 * 4, 96 + 16), "white")
     x = 16
     for img, size in ((small, 16), (small, 32), (badge_small, 32), (full, 96)):

@@ -168,7 +168,7 @@ No outro servidor, use essa tag em `image:` e remova o bloco `build:`. Como o in
 
 A VPS (`https://bs-chat.jscinfor.com`) roda o Chatwoot pelo template do Coolify. A imagem com a marca BioSaúde é construída pelo GitHub Actions (`.github/workflows/chatwoot-image.yml`) e publicada no GHCR; no Coolify só se troca a imagem.
 
-Marca, cores, título do login e versão do Chatwoot ficam no bloco `env:` do workflow. O workflow roda `generate.py` com esses valores antes do build, então os arquivos de `public/` do Hospital Mandalore no repositório não precisam mudar.
+Marca, cores, título do login e versão do Chatwoot ficam no bloco `env:` do workflow. Logos e ícones saem do logo oficial `source/logo-biosaude.png` (do Instagram `@biosaudebarras`): `BRAND_LOGO_BOX` recorta emblema e nome sem o subtítulo, `BRAND_ICON_BOX` recorta o emblema para os ícones e `BRAND_SMALL_ICON_BOX` só o coração, para os favicons de 16 e 32 px. O workflow roda `generate.py` com esses valores antes do build, então os arquivos de `public/` do Hospital Mandalore no repositório não precisam mudar.
 
 ### Publicar a imagem
 
