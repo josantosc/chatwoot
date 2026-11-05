@@ -1,0 +1,67 @@
+name: Imagem Chatwoot BioSaúde
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'branding/**'
+      - '.github/workflows/chatwoot-image.yml'
+
+env:
+  CHATWOOT_VERSION: v4.19.1
+  IMAGE_NAME: biosaude-chatwoot
+  BRAND_NAME: BioSaúde
+  BRAND_SHORT: BS
+  BRAND_LOGO_TOP: ''
+  BRAND_LOGO_MAIN: BioSaúde
+  BRAND_COLOR_TOP: '#12A4A8'
+  BRAND_COLOR_BOTTOM: '#0B5C7A'
+  BRAND_COLOR_BADGE: '#E53935'
+  LOGIN_TITLE: Entrar no BioSaúde
+  LOGO_VERSION: '1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Gerar ícones e logos
+        working-directory: branding
+        run: |
+          sudo apt-get install -y fonts-dejavu-core
+          pip install pillow
+          python generate.py
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Nome da imagem
+        id: img
+        run: echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: branding
+          push: true
+          build-args: |
+            CHATWOOT_IMAGE=chatwoot/chatwoot:${{ env.CHATWOOT_VERSION }}
+            BRAND_NAME=${{ env.BRAND_NAME }}
+            LOGIN_TITLE=${{ env.LOGIN_TITLE }}
+            LOGO_VERSION=${{ env.LOGO_VERSION }}
+          tags: |
+            ${{ steps.img.outputs.ref }}:${{ env.CHATWOOT_VERSION }}
+            ${{ steps.img.outputs.ref }}:${{ env.CHATWOOT_VERSION }}-${{ github.run_number }}

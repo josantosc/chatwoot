@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1820" height="512" viewBox="0 0 1820 512">
+  <g>  <defs>
+    <linearGradient id="mm-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12A4A8"/>
+      <stop offset="1" stop-color="#0B5C7A"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#mm-bg)"/>
+  <rect x="166" y="72" width="180" height="368" rx="36" fill="#FFFFFF"/>
+  <rect x="72" y="166" width="368" height="180" rx="36" fill="#FFFFFF"/>
+  <text x="256" y="256" dy="0.35em" text-anchor="middle" fill="#0B5C7A"
+        font-family="DejaVu Sans, Verdana, Arial, sans-serif" font-weight="700" font-size="82">MM</text>
+  </g>
+  <text x="580" y="200" fill="#12A4A8" font-family="DejaVu Sans, Verdana, Arial, sans-serif"
+        font-weight="700" font-size="104" letter-spacing="18">HOSPITAL</text>
+  <text x="572" y="400" fill="#0B5C7A" font-family="DejaVu Sans, Verdana, Arial, sans-serif"
+        font-weight="700" font-size="196">Mandalore</text>
+</svg>
