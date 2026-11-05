@@ -21,6 +21,9 @@ env:
   BRAND_ICON_BOX: '320,352,704,518'
   BRAND_SMALL_ICON_BOX: '322,355,438,500'
   LOGIN_TITLE: Entrar no BioSaúde
+  LOGIN_PRIMARY: '#2F7994'
+  LOGIN_GLOW: '#4FB3D1'
+  LOGIN_ACCENT: '#C0223B'
   LOGO_VERSION: '1'
 
 jobs:
@@ -64,6 +67,9 @@ jobs:
             BRAND_NAME=${{ env.BRAND_NAME }}
             LOGIN_TITLE=${{ env.LOGIN_TITLE }}
             LOGO_VERSION=${{ env.LOGO_VERSION }}
+            LOGIN_PRIMARY=${{ env.LOGIN_PRIMARY }}
+            LOGIN_GLOW=${{ env.LOGIN_GLOW }}
+            LOGIN_ACCENT=${{ env.LOGIN_ACCENT }}
           tags: |
             ${{ steps.img.outputs.ref }}:${{ env.CHATWOOT_VERSION }}
             ${{ steps.img.outputs.ref }}:${{ env.CHATWOOT_VERSION }}-${{ github.run_number }}

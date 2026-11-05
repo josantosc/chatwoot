@@ -170,6 +170,12 @@ A VPS (`https://bs-chat.jscinfor.com`) roda o Chatwoot pelo template do Coolify.
 
 Marca, cores, título do login e versão do Chatwoot ficam no bloco `env:` do workflow. Logos e ícones saem do logo oficial `source/logo-biosaude.png` (do Instagram `@biosaudebarras`): `BRAND_LOGO_BOX` recorta emblema e nome sem o subtítulo, `BRAND_ICON_BOX` recorta o emblema para os ícones e `BRAND_SMALL_ICON_BOX` só o coração, para os favicons de 16 e 32 px. O workflow roda `generate.py` com esses valores antes do build, então os arquivos de `public/` do Hospital Mandalore no repositório não precisam mudar.
 
+### Tela de login
+
+`login.css` dá à tela de login fundo escuro com grade e linha de batimento cardíaco animadas, cartão de vidro com borda luminosa girando, campos com brilho no foco e botão com reflexo. O build prefixa as cores (`LOGIN_PRIMARY`, `LOGIN_GLOW`, `LOGIN_ACCENT`), grava o arquivo em `/brand-assets/login.css` e liga no `<head>` de `app/views/layouts/vueapp.html.erb` (o build falha se o layout mudar). Os seletores pegam só a página com campo de senha (`main.min-h-screen:has(input[type=password])`): login, nova senha e cadastro. Com "reduzir movimento" ligado no sistema, as animações param.
+
+![Login BioSaúde](preview/login-biosaude.png)
+
 ### Publicar a imagem
 
 1. Envie a pasta para `git@github.com:josantosc/chatwoot.git`. O `.gitignore` deixa de fora o `.env` e o `docker-compose.yaml` local, que têm senhas.

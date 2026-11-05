@@ -1,0 +1,177 @@
+/* Tela de login. As cores (--bs-primary, --bs-glow, --bs-accent) são prefixadas no build. */
+
+@property --bs-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+main.min-h-screen:has(input[type='password']) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(60rem 40rem at 10% -10%, color-mix(in srgb, var(--bs-primary) 55%, transparent), transparent 60%),
+    radial-gradient(50rem 35rem at 110% 110%, color-mix(in srgb, var(--bs-accent) 30%, transparent), transparent 60%),
+    linear-gradient(160deg, #04101a 0%, #0a1f2b 55%, #050d15 100%) !important;
+}
+
+/* grade luminosa */
+main.min-h-screen:has(input[type='password'])::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+  animation: bs-grid 20s linear infinite;
+}
+
+/* linha de batimento cardíaco */
+main.min-h-screen:has(input[type='password'])::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58%;
+  height: 120px;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent, var(--bs-accent) 30%, var(--bs-glow) 70%, transparent);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='120'><path d='M0 60H220L235 60L245 30L255 95L268 10L282 110L292 60H310L320 48L332 60H600' fill='none' stroke='white' stroke-width='2.5' stroke-linejoin='round'/></svg>") 0 0 / 600px 120px repeat-x;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='120'><path d='M0 60H220L235 60L245 30L255 95L268 10L282 110L292 60H310L320 48L332 60H600' fill='none' stroke='white' stroke-width='2.5' stroke-linejoin='round'/></svg>") 0 0 / 600px 120px repeat-x;
+  filter: drop-shadow(0 0 6px var(--bs-glow));
+  opacity: 0.55;
+  animation: bs-ecg 6s linear infinite;
+}
+
+/* cabeçalho: logo e título */
+main.min-h-screen:has(input[type='password']) > section:first-child img.dark\:hidden {
+  display: none !important;
+}
+main.min-h-screen:has(input[type='password']) > section:first-child img.dark\:block {
+  display: block !important;
+  height: 3.25rem !important;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--bs-glow) 55%, transparent));
+  animation: bs-pulse 2.4s ease-in-out infinite;
+}
+main.min-h-screen:has(input[type='password']) > section:first-child h2 {
+  background: linear-gradient(90deg, #ffffff, var(--bs-glow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+}
+
+/* cartão de vidro com borda girando */
+main.min-h-screen:has(input[type='password']) > section:has(form) {
+  position: relative;
+  background: rgba(8, 24, 34, 0.55) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px !important;
+  box-shadow:
+    0 30px 80px -20px rgba(0, 0, 0, 0.7),
+    0 0 60px -10px color-mix(in srgb, var(--bs-primary) 55%, transparent) !important;
+}
+main.min-h-screen:has(input[type='password']) > section:has(form):not(.animate-wiggle) {
+  animation: bs-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+main.min-h-screen:has(input[type='password']) > section:has(form)::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--bs-angle), transparent 0 65%, var(--bs-glow) 80%, var(--bs-accent) 90%, transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: bs-spin 6s linear infinite;
+}
+
+main.min-h-screen:has(input[type='password']) form label,
+main.min-h-screen:has(input[type='password']) form label * {
+  color: rgba(230, 244, 248, 0.85) !important;
+}
+main.min-h-screen:has(input[type='password']) a.text-link {
+  color: var(--bs-glow) !important;
+}
+
+/* campos */
+main.min-h-screen:has(input[type='password']) form input:not([type='checkbox']):not([type='radio']) {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #e6f4f8 !important;
+  caret-color: var(--bs-glow);
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  outline: none !important;
+  border-radius: 12px !important;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+main.min-h-screen:has(input[type='password']) form input::placeholder {
+  color: rgba(230, 244, 248, 0.35) !important;
+}
+main.min-h-screen:has(input[type='password']) form input:focus {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: var(--bs-glow) !important;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--bs-glow) 30%, transparent),
+    0 0 24px color-mix(in srgb, var(--bs-glow) 40%, transparent) !important;
+}
+main.min-h-screen:has(input[type='password']) form input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #0d2330 inset !important;
+  -webkit-text-fill-color: #e6f4f8 !important;
+}
+
+/* botão */
+main.min-h-screen:has(input[type='password']) form button[type='submit'] {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(110deg, var(--bs-primary), var(--bs-glow) 50%, var(--bs-primary)) !important;
+  background-size: 200% 100% !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: 0 12px 30px -10px color-mix(in srgb, var(--bs-glow) 80%, transparent);
+  transition: transform 0.15s, box-shadow 0.2s, background-position 0.6s;
+}
+main.min-h-screen:has(input[type='password']) form button[type='submit']:hover:not(:disabled) {
+  background-position: 100% 0 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px -10px color-mix(in srgb, var(--bs-glow) 95%, transparent);
+}
+main.min-h-screen:has(input[type='password']) form button[type='submit']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: bs-shine 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes bs-grid { to { background-position: 0 48px, 48px 0; } }
+@keyframes bs-ecg { to { -webkit-mask-position: -600px 0; mask-position: -600px 0; } }
+@keyframes bs-spin { to { --bs-angle: 360deg; } }
+@keyframes bs-rise { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+@keyframes bs-shine { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@keyframes bs-pulse { 0%, 100% { transform: scale(1); } 12% { transform: scale(1.04); } 24% { transform: scale(1); } 36% { transform: scale(1.03); } }
+
+@media (prefers-reduced-motion: reduce) {
+  main.min-h-screen:has(input[type='password']),
+  main.min-h-screen:has(input[type='password']) *,
+  main.min-h-screen:has(input[type='password']) *::before,
+  main.min-h-screen:has(input[type='password']) *::after,
+  main.min-h-screen:has(input[type='password'])::before,
+  main.min-h-screen:has(input[type='password'])::after {
+    animation: none !important;
+  }
+}
