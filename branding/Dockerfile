@@ -10,7 +10,7 @@ ENV CUSTOM_BRAND_NAME=${BRAND_NAME} \
 
 COPY public/ /app/public/
 COPY custom_branding.rb /app/config/initializers/zz_custom_branding.rb
-COPY login.css brand.env /tmp/brand/
+COPY login.css brand.env head.html /tmp/brand/
 
 # Título do login (string de i18n compilada no bundle) e defaults para instalações novas.
 # O build falha se o texto original não for encontrado, sinal de que a versão mudou.
@@ -27,6 +27,7 @@ RUN set -e; \
 
 # Tema: azul padrão do Chatwoot (#2781F6, compilado no CSS) trocado pela cor da marca,
 # theme.css (escala --blue-*, fundo escuro) + login.css ligados no layout do painel.
+# head.html troca a descrição em inglês pelas metatags de prévia de link (Open Graph).
 RUN set -e; \
     . /tmp/brand/brand.env; \
     css=$(grep -lE "39 129 246|#2781f6" -i /app/public/vite/assets/*.css || true); \
@@ -37,7 +38,10 @@ RUN set -e; \
     done; \
     assets=/app/public/brand-assets; \
     cat "$assets/theme.css" /tmp/brand/login.css > "$assets/brand.css"; \
-    rm -rf "$assets/theme.css" /tmp/brand; \
     layout=/app/app/views/layouts/vueapp.html.erb; \
-    grep -q '</head>' "$layout" || { echo "Layout do painel sem </head>"; exit 1; }; \
+    grep -qE '^[[:space:]]*</head>[[:space:]]*$' "$layout" || { echo "Layout do painel sem linha </head>"; exit 1; }; \
+    sed -i -e '/<meta name="description"/d' -e "s/#2781F6/${BRAND_HEX}/Ig" \
+      -e '/^[[:space:]]*<\/head>[[:space:]]*$/{r /tmp/brand/head.html' -e 'd}' "$layout"; \
+    grep -q 'og:image' "$layout" || { echo "Metatags de prévia não inseridas"; exit 1; }; \
+    rm -rf "$assets/theme.css" /tmp/brand; \
     sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/brand-assets/brand.css?v=${LOGO_VERSION}\"></head>|" "$layout"

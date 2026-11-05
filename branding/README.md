@@ -209,6 +209,12 @@ Conferir:
 curl -s https://bs-chat.jscinfor.com/app/login | grep -oE '"(INSTALLATION_NAME|BRAND_NAME|LOGO[A-Z_]*)":"[^"]*"'
 ```
 
+### Prévia de link (WhatsApp, Telegram, redes)
+
+O `generate.py` cria `brand-assets/og-image.png` (1200x630, logo centralizado) e `head.html` com `description` e as metatags `og:*`; o texto vem de `BRAND_DESCRIPTION`. O build remove a descrição em inglês do layout e insere esse bloco. A URL absoluta da imagem usa o `FRONTEND_URL` do Chatwoot, que precisa ser `https://bs-chat.jscinfor.com`.
+
+O WhatsApp guarda a prévia por URL. Para ver a nova, teste com um parâmetro (`https://bs-chat.jscinfor.com/?v=2`) ou em [opengraph.xyz](https://www.opengraph.xyz/).
+
 ### Mudar marca ou versão
 
 Edite o `env:` do workflow (para logos novos, incremente `LOGO_VERSION`; para nova versão do Chatwoot, troque `CHATWOOT_VERSION`), faça push, espere o workflow e atualize a tag no Coolify se a versão mudou. Depois **Redeploy**.
@@ -217,4 +223,4 @@ Edite o `env:` do workflow (para logos novos, incremente `LOGO_VERSION`; para no
 
 - **Atualização do Chatwoot:** sempre fixe uma versão (`vX.Y.Z`), evite `latest`. O build acusa se o título do login não puder ser trocado.
 - **Super Admin:** com o initializer ativo, alterações de nome/logos feitas pelo painel são revertidas no próximo boot. Use `CUSTOM_BRANDING_ENFORCE=false` se quiser gerenciar por lá.
-- **Ainda com "Chatwoot":** links `BRAND_URL`, `WIDGET_BRAND_URL`, `TERMS_URL` e `PRIVACY_URL` (apontam para chatwoot.com), o título do painel Super Admin (`SuperAdmin | Chatwoot`) e a meta description da página (texto em inglês "... is a customer support solution ...").
+- **Ainda com "Chatwoot":** links `BRAND_URL`, `WIDGET_BRAND_URL`, `TERMS_URL` e `PRIVACY_URL` (apontam para chatwoot.com), e o título do painel Super Admin (`SuperAdmin | Chatwoot`).

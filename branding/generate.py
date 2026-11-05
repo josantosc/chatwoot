@@ -1,5 +1,8 @@
 """Gera a identidade visual fictícia do Hospital Mandalore (MM) para o Chatwoot.
 
+Também gera a prévia de link (brand-assets/og-image.png) e head.html com as metatags
+Open Graph; o texto vem de BRAND_DESCRIPTION.
+
 Uso: python3 generate.py  ->  arquivos em ./public (copiados para /app/public no container)
 
 Marca e cores podem ser trocadas por variáveis de ambiente (BRAND_NAME, BRAND_SHORT,
@@ -10,6 +13,7 @@ do logo oficial em vez do desenho: BRAND_LOGO_BOX recorta o logo, BRAND_ICON_BOX
 dos ícones e BRAND_SMALL_ICON_BOX o dos favicons de 16/32 px (caixas "x1,y1,x2,y2" em pixels).
 """
 import base64
+import html
 import json
 import os
 from io import BytesIO
@@ -34,6 +38,8 @@ PRIMARY = rgb(os.environ.get("LOGIN_PRIMARY", "#0B5C7A"))
 GLOW = rgb(os.environ.get("LOGIN_GLOW", "#12A4A8"))
 ACCENT = rgb(os.environ.get("LOGIN_ACCENT", "#E53935"))
 TITLE = os.environ.get("LOGIN_TITLE", "Hospital Mandalore Login")
+DESCRIPTION = os.environ.get("BRAND_DESCRIPTION", f"Central de atendimento do {NAME}.")
+VERSION = os.environ.get("LOGO_VERSION", "1")
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 OUT = Path(__file__).parent / "public"
@@ -223,8 +229,39 @@ def theme_css():
             f".dark{{{scale(dark)}{dark_bg}}}\n")
 
 
+def og_image(logo):
+    """Prévia de link (WhatsApp, Telegram, redes): 1200x630 com o logo centralizado."""
+    w, h = 1200, 630
+    img = Image.new("RGBA", (w, h), "white")
+    scale = min(900 / logo.width, 380 / logo.height)
+    logo = logo.resize((round(logo.width * scale), round(logo.height * scale)), Image.LANCZOS)
+    img.alpha_composite(logo, ((w - logo.width) // 2, (h - logo.height) // 2))
+    ImageDraw.Draw(img).rectangle([0, h - 18, w, h], fill=PRIMARY)
+    return img.convert("RGB")
+
+
+def head_html():
+    """Metatags inseridas no layout do painel; a URL absoluta da imagem vem de FRONTEND_URL."""
+    name, desc = html.escape(NAME), html.escape(DESCRIPTION)
+    base = "<%= ENV.fetch('FRONTEND_URL', '').chomp('/') %>"
+    return (
+        f'    <meta name="description" content="{desc}">\n'
+        f'    <meta property="og:type" content="website">\n'
+        f'    <meta property="og:site_name" content="{name}">\n'
+        f'    <meta property="og:title" content="{name}">\n'
+        f'    <meta property="og:description" content="{desc}">\n'
+        f'    <meta property="og:url" content="{base}/">\n'
+        f'    <meta property="og:image" content="{base}/brand-assets/og-image.png?v={VERSION}">\n'
+        f'    <meta property="og:image:width" content="1200">\n'
+        f'    <meta property="og:image:height" content="630">\n'
+        f'    <meta name="twitter:card" content="summary_large_image">\n'
+        f'  </head>\n'
+    )
+
+
 def main():
     ASSETS.mkdir(parents=True, exist_ok=True)
+    (Path(__file__).parent / "head.html").write_text(head_html(), encoding="utf-8")
     (ASSETS / "theme.css").write_text(theme_css(), encoding="utf-8")
     (Path(__file__).parent / "brand.env").write_text(
         f'BRAND_RGB="{triplet(PRIMARY)}"\nBRAND_HEX="{hexcolor(PRIMARY)}"\n', encoding="utf-8")
@@ -233,7 +270,8 @@ def main():
     if logo_file:
         source = Image.open(Path(__file__).parent / logo_file).convert("RGB")
         logo_box = box("BRAND_LOGO_BOX")
-        logo = fit_width(transparent(source.crop(logo_box) if logo_box else source), 600)
+        share_logo = transparent(source.crop(logo_box) if logo_box else source)
+        logo = fit_width(share_logo, 600)
         logo_dark = lighten_for_dark(logo)
         emblem = transparent(source.crop(box("BRAND_ICON_BOX")))
         small_box = box("BRAND_SMALL_ICON_BOX")
@@ -264,6 +302,10 @@ def main():
         save_png(full if size >= 48 else small, f"android-icon-{size}x{size}.png", size)
     for size in (70, 144, 150, 310):
         save_png(full, f"ms-icon-{size}x{size}.png", size)
+
+    if not logo_file:
+        share_logo = logo_preview(BOTTOM, TOP, (255, 255, 255, 0))
+    og_image(share_logo).save(ASSETS / "og-image.png", optimize=True)
 
     if logo_file:
         (ASSETS / "logo_thumbnail.svg").write_text(svg_png(full.resize((256, 256), Image.LANCZOS)), encoding="utf-8")

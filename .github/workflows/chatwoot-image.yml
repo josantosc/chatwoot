@@ -24,7 +24,8 @@ env:
   LOGIN_PRIMARY: '#2F7994'
   LOGIN_GLOW: '#4FB3D1'
   LOGIN_ACCENT: '#C0223B'
-  LOGO_VERSION: '1'
+  BRAND_DESCRIPTION: 'Diagnóstico Clínico e Laboratorial em Barras-PI. Atendimento e agendamento pelo chat.'
+  LOGO_VERSION: '2'
 
 jobs:
   build:
