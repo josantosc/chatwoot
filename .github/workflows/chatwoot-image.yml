@@ -67,9 +67,6 @@ jobs:
             BRAND_NAME=${{ env.BRAND_NAME }}
             LOGIN_TITLE=${{ env.LOGIN_TITLE }}
             LOGO_VERSION=${{ env.LOGO_VERSION }}
-            LOGIN_PRIMARY=${{ env.LOGIN_PRIMARY }}
-            LOGIN_GLOW=${{ env.LOGIN_GLOW }}
-            LOGIN_ACCENT=${{ env.LOGIN_ACCENT }}
           tags: |
             ${{ steps.img.outputs.ref }}:${{ env.CHATWOOT_VERSION }}
             ${{ steps.img.outputs.ref }}:${{ env.CHATWOOT_VERSION }}-${{ github.run_number }}

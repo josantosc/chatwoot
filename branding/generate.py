@@ -30,6 +30,10 @@ LOGO_MAIN = os.environ.get("BRAND_LOGO_MAIN", "Mandalore")
 TOP = rgb(os.environ.get("BRAND_COLOR_TOP", "#12A4A8"))
 BOTTOM = rgb(os.environ.get("BRAND_COLOR_BOTTOM", "#0B5C7A"))
 BADGE = rgb(os.environ.get("BRAND_COLOR_BADGE", "#E53935"))
+PRIMARY = rgb(os.environ.get("LOGIN_PRIMARY", "#0B5C7A"))
+GLOW = rgb(os.environ.get("LOGIN_GLOW", "#12A4A8"))
+ACCENT = rgb(os.environ.get("LOGIN_ACCENT", "#E53935"))
+TITLE = os.environ.get("LOGIN_TITLE", "Hospital Mandalore Login")
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 OUT = Path(__file__).parent / "public"
@@ -190,8 +194,40 @@ def on_background(img, bg):
     return canvas
 
 
+def mix(a, b, t):
+    return tuple(round(x + (y - x) * t) for x, y in zip(a, b))
+
+
+def triplet(c):
+    return " ".join(str(v) for v in c)
+
+
+def theme_css():
+    """Escala --blue-* do Chatwoot (cor de destaque do painel) na cor da marca e fundo do tema escuro."""
+    white, black, night = (255, 255, 255), (0, 0, 0), (10, 18, 24)
+    light = [mix(white, PRIMARY, t) for t in (0.02, 0.05, 0.10, 0.16, 0.24, 0.33, 0.45, 0.62)]
+    light += [PRIMARY, mix(PRIMARY, black, 0.10), mix(PRIMARY, black, 0.18), mix(PRIMARY, black, 0.60)]
+    dark = [mix(night, PRIMARY, t) for t in (0.10, 0.16, 0.24, 0.32, 0.42, 0.52, 0.62, 0.78)]
+    dark += [PRIMARY, mix(PRIMARY, white, 0.10), mix(PRIMARY, white, 0.45), mix(PRIMARY, white, 0.80)]
+
+    def scale(colors):
+        return "".join(f"--blue-{i}:{triplet(c)};" for i, c in enumerate(colors, 1))
+
+    bg = {name: mix(base, PRIMARY, 0.10) for name, base in (
+        ("background-color", (28, 29, 32)), ("solid-1", (23, 23, 26)),
+        ("solid-2", (29, 30, 36)), ("solid-3", (44, 45, 54)))}
+    dark_bg = "".join(f"--{k}:{triplet(v)};" for k, v in bg.items())
+    title = TITLE.replace("\\", "\\\\").replace('"', '\\"')
+    return (f':root{{--bs-primary:{hexcolor(PRIMARY)};--bs-glow:{hexcolor(GLOW)};'
+            f'--bs-accent:{hexcolor(ACCENT)};--bs-title:"{title}";{scale(light)}}}\n'
+            f".dark{{{scale(dark)}{dark_bg}}}\n")
+
+
 def main():
     ASSETS.mkdir(parents=True, exist_ok=True)
+    (ASSETS / "theme.css").write_text(theme_css(), encoding="utf-8")
+    (Path(__file__).parent / "brand.env").write_text(
+        f'BRAND_RGB="{triplet(PRIMARY)}"\nBRAND_HEX="{hexcolor(PRIMARY)}"\n', encoding="utf-8")
 
     logo_file = os.environ.get("BRAND_LOGO_FILE")
     if logo_file:

@@ -1,4 +1,4 @@
-/* Tela de login. As cores (--bs-primary, --bs-glow, --bs-accent) são prefixadas no build. */
+/* Tela de login. As cores e o título (--bs-*) vêm do theme.css gerado por generate.py. */
 
 @property --bs-angle {
   syntax: '<angle>';
@@ -65,6 +65,12 @@ main.min-h-screen:has(input[type='password']) > section:first-child h2 {
   color: transparent !important;
   font-weight: 600 !important;
   letter-spacing: 0.01em;
+  font-size: 0 !important;
+}
+main.min-h-screen:has(input[type='password']) > section:first-child h2::after {
+  content: var(--bs-title);
+  font-size: 1.875rem;
+  line-height: 2.25rem;
 }
 
 /* cartão de vidro com borda girando */

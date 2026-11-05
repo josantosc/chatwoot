@@ -172,7 +172,17 @@ Marca, cores, título do login e versão do Chatwoot ficam no bloco `env:` do wo
 
 ### Tela de login
 
-`login.css` dá à tela de login fundo escuro com grade e linha de batimento cardíaco animadas, cartão de vidro com borda luminosa girando, campos com brilho no foco e botão com reflexo. O build prefixa as cores (`LOGIN_PRIMARY`, `LOGIN_GLOW`, `LOGIN_ACCENT`), grava o arquivo em `/brand-assets/login.css` e liga no `<head>` de `app/views/layouts/vueapp.html.erb` (o build falha se o layout mudar). Os seletores pegam só a página com campo de senha (`main.min-h-screen:has(input[type=password])`): login, nova senha e cadastro. Com "reduzir movimento" ligado no sistema, as animações param.
+`login.css` dá à tela de login fundo escuro com grade e linha de batimento cardíaco animadas, cartão de vidro com borda luminosa girando, campos com brilho no foco e botão com reflexo. O título vem de `--bs-title` (`LOGIN_TITLE`) por CSS, então não depende do JavaScript em cache no navegador.
+
+### Painel (todas as telas)
+
+`generate.py` grava `public/brand-assets/theme.css` e `brand.env` a partir de `LOGIN_PRIMARY`, `LOGIN_GLOW`, `LOGIN_ACCENT` e `LOGIN_TITLE`:
+
+- escala `--blue-1` a `--blue-12` do Chatwoot na cor da marca (abas ativas, links, seleção, destaques);
+- fundo do tema escuro (`--background-color`, `--solid-1` a `--solid-3`) puxado levemente para a cor da marca;
+- variáveis `--bs-*` usadas pelo `login.css`.
+
+No build, o azul padrão compilado no CSS do Chatwoot (`#2781F6` / `39 129 246`, usado em botões e `n-brand`) é trocado pela cor da marca; `theme.css` e `login.css` viram `/brand-assets/brand.css`, ligado no `<head>` de `app/views/layouts/vueapp.html.erb` (o build falha se o layout mudar). Quem já tinha aberto o Chatwoot antes precisa de um Ctrl+Shift+R uma vez, porque os arquivos do Chatwoot mantêm o nome e ficam em cache. Os seletores pegam só a página com campo de senha (`main.min-h-screen:has(input[type=password])`): login, nova senha e cadastro. Com "reduzir movimento" ligado no sistema, as animações param.
 
 ![Login BioSaúde](preview/login-biosaude.png)
 

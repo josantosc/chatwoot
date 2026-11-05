@@ -4,16 +4,13 @@ FROM ${CHATWOOT_IMAGE}
 ARG BRAND_NAME="Hospital Mandalore"
 ARG LOGIN_TITLE="Hospital Mandalore Login"
 ARG LOGO_VERSION=3
-ARG LOGIN_PRIMARY="#0B5C7A"
-ARG LOGIN_GLOW="#12A4A8"
-ARG LOGIN_ACCENT="#E53935"
 
 ENV CUSTOM_BRAND_NAME=${BRAND_NAME} \
     CUSTOM_LOGO_VERSION=${LOGO_VERSION}
 
 COPY public/ /app/public/
 COPY custom_branding.rb /app/config/initializers/zz_custom_branding.rb
-COPY login.css /tmp/login.css
+COPY login.css brand.env /tmp/brand/
 
 # Título do login (string de i18n compilada no bundle) e defaults para instalações novas.
 # O build falha se o texto original não for encontrado, sinal de que a versão mudou.
@@ -28,11 +25,19 @@ RUN set -e; \
       sed -i "/name: ${key}\$/,/value:/ s|value: .*|value: '${BRAND_NAME}'|" /app/config/installation_config.yml; \
     done
 
-# Tema da tela de login: CSS com as cores da marca, ligado no layout do painel.
+# Tema: azul padrão do Chatwoot (#2781F6, compilado no CSS) trocado pela cor da marca,
+# theme.css (escala --blue-*, fundo escuro) + login.css ligados no layout do painel.
 RUN set -e; \
-    { printf ':root{--bs-primary:%s;--bs-glow:%s;--bs-accent:%s}\n' "$LOGIN_PRIMARY" "$LOGIN_GLOW" "$LOGIN_ACCENT"; \
-      cat /tmp/login.css; } > /app/public/brand-assets/login.css; \
-    rm /tmp/login.css; \
+    . /tmp/brand/brand.env; \
+    css=$(grep -lE "39 129 246|#2781f6" -i /app/public/vite/assets/*.css || true); \
+    [ -n "$css" ] || echo "AVISO: azul padrão do Chatwoot não encontrado no CSS"; \
+    for f in $css; do \
+      sed -i -e "s/39 129 246/${BRAND_RGB}/g" -e "s/#2781f6/${BRAND_HEX}/Ig" "$f"; \
+      rm -f "$f.gz" "$f.br"; \
+    done; \
+    assets=/app/public/brand-assets; \
+    cat "$assets/theme.css" /tmp/brand/login.css > "$assets/brand.css"; \
+    rm -rf "$assets/theme.css" /tmp/brand; \
     layout=/app/app/views/layouts/vueapp.html.erb; \
     grep -q '</head>' "$layout" || { echo "Layout do painel sem </head>"; exit 1; }; \
-    sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/brand-assets/login.css?v=${LOGO_VERSION}\"></head>|" "$layout"
+    sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/brand-assets/brand.css?v=${LOGO_VERSION}\"></head>|" "$layout"
