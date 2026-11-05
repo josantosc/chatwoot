@@ -172,7 +172,7 @@ Marca, cores, título do login e versão do Chatwoot ficam no bloco `env:` do wo
 
 ### Publicar a imagem
 
-1. Crie um repositório **privado** no GitHub e envie a pasta `~/chatwoot` (o `.gitignore` deixa o `.env` de fora).
+1. Envie a pasta para `git@github.com:josantosc/chatwoot.git`. O `.gitignore` deixa de fora o `.env` e o `docker-compose.yaml` local, que têm senhas.
 2. Em **Actions → Imagem Chatwoot BioSaúde → Run workflow**. Também roda sozinho a cada push em `branding/`.
 3. Resultado: `ghcr.io/<owner>/biosaude-chatwoot:v4.19.1` (e uma tag `v4.19.1-<número da execução>` para voltar versão).
 4. Na primeira vez, em **GitHub → perfil → Packages → biosaude-chatwoot → Package settings**, mude a visibilidade para **Public**. A imagem só tem logos e nomes; senhas ficam no Coolify.
