@@ -96,6 +96,7 @@ main.min-h-screen:has(input[type='password']) > section:has(form)::before {
   border-radius: inherit;
   background: conic-gradient(from var(--bs-angle), transparent 0 65%, var(--bs-glow) 80%, var(--bs-accent) 90%, transparent);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
